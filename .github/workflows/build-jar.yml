@@ -1,0 +1,38 @@
+# 需要可安装的 jar 时：在 GitHub → Actions → Build jar → Run workflow。
+# 成功后下载「工件」home-accounting-jar（zip 内含 home-accounting-server.jar），
+# 或在服务器上运行 deploy/fetch-jar-from-github.sh（需带权限的 Token）。
+
+name: Build jar
+
+on:
+  workflow_dispatch:
+
+jobs:
+  jar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+
+      - name: Build
+        working-directory: backend
+        run: mvn -B verify
+
+      - name: Stage artifact with fixed filename
+        run: |
+          set -e
+          JAR="$(ls backend/target/home-accounting-server-*.jar | head -1)"
+          test -f "$JAR"
+          cp "$JAR" home-accounting-server.jar
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: home-accounting-jar
+          path: home-accounting-server.jar
+          retention-days: 30

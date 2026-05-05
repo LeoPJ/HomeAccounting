@@ -70,7 +70,7 @@ EXIT;
 
 ## 第 3 步：在服务器上放配置文件（仍在 SSH 里）
 
-1. 在你**自己电脑**上，用记事本或 VS Code 打开本仓库里的 `**deploy/home-accounting.env.example`**，另存思路是：在服务器上新建一个文件，内容按下面做。
+1. 在你**自己电脑**上，用记事本或 VS Code 打开本仓库里的 `deploy/home-accounting.env.example`，按示例在服务器上新建配置文件。
 2. 在服务器上：
 
 ```bash
@@ -129,13 +129,13 @@ curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:8080/
 
 能返回一个 HTTP 状态码（例如 `401` 或 `404` 也说明进程在听端口）。**Ctrl+C** 可停掉前台进程。
 
-若你本机没有安装 Maven / Java，可以暂时跳过「本机打包」，等第 6 步用 GitHub 构建后再把 jar 从 Actions 产物或 SCP 弄上去——但对小白来说，本机先打一次最容易理解。
+若你本机没有安装 Maven / Java，可以暂时跳过「本机打包」，等 **第 6 步** 在 GitHub 上跑 **Build jar** 再在服务器用脚本或浏览器下载工件。
 
 ---
 
 ## 第 5 步：用 systemd 常驻运行（可选但推荐）
 
-把仓库里的 `**deploy/home-accounting.service.example`** 打开，按注释改好路径后，在服务器上：
+把仓库里的 `deploy/home-accounting.service.example` 打开，按注释改好路径后，在服务器上：
 
 ```bash
 sudo nano /etc/systemd/system/home-accounting.service
@@ -149,102 +149,64 @@ sudo systemctl enable --now home-accounting
 sudo systemctl status home-accounting
 ```
 
-`active (running)` 即正常。具体路径要和下面 GitHub 部署里拷贝 jar 的位置一致（见第 7 步里的 `DEPLOY_REMOTE_COMMAND`）。
+`active (running)` 即正常。`ExecStart` 里的 jar 路径要和 **第 8 步** 脚本安装的目录一致（默认可用 `/opt/home-accounting/home-accounting-server.jar`）。
 
 ---
 
-## 第 6 步：给 GitHub 一把「只用来部署」的 SSH 钥匙
+## 第 6 步：在 GitHub 上打出「可下载的 jar」（不上传你的服务器）
 
-在你**自己电脑**上（不要在服务器上也可以），PowerShell 或终端执行：
-
-```bash
-ssh-keygen -t ed25519 -f ./github_deploy_key -N ""
-```
-
-会生成两个文件：`github_deploy_key`（私钥）、`github_deploy_key.pub`（公钥）。
-
-1. 用记事本打开 `**github_deploy_key.pub**`，全选复制。
-2. **SSH 登录服务器**，执行：
-
-```bash
-mkdir -p ~/.ssh
-chmod 700 ~/.ssh
-nano ~/.ssh/authorized_keys
-```
-
-把刚才复制的**公钥**粘到**新的一行**末尾，保存退出。
-
-```bash
-chmod 600 ~/.ssh/authorized_keys
-```
-
-1. 用记事本打开 `github_deploy_key`（没有 `.pub` 的那个），**整份复制**（含 `BEGIN` / `END`）。这份是**私钥**，不要发给任何人、不要贴到公开 issue。
+1. 浏览器打开你的仓库 → 点 **「Actions」**。
+2. 左侧选 **「Build jar」**（若没有，先把你本地包含 `build-jar.yml` 的提交 **push** 到 GitHub）。
+3. 右侧点 **「Run workflow」** → 分支选 **`main`**（或你实际用的默认分支）→ 点绿色 **「Run workflow」**。
+4. 等出现**绿色勾**。点进这次运行，页面底部 **Artifacts** 里会有 **`home-accounting-jar`**（一个 zip，解压后就是 `home-accounting-server.jar`）。你也可以不下载，交给下一步脚本自动拉。
 
 ---
 
-## 第 7 步：在 GitHub 网页里填「密钥」（Secrets）
+## 第 7 步：给服务器一把「只读你仓库 Actions」的 GitHub 令牌
 
-1. 打开 GitHub 上你的仓库。
-2. 点 **「Settings」**（设置）。
-3. 左侧找到 **「Secrets and variables」** → **「Actions」**。
-4. 点 **「New repository secret」**，依次新建下面几个（名字必须**完全一致**）：
+在 **GitHub 网页**（不是服务器）操作：
 
-
-| Name（名称）                | Value（内容填什么）                                                            |
-| ----------------------- | ----------------------------------------------------------------------- |
-| `DEPLOY_HOST`           | 服务器 IP 或域名                                                              |
-| `DEPLOY_USER`           | SSH 登录用户名                                                               |
-| `DEPLOY_SSH_KEY`        | 上一步里**整个私钥**文本                                                          |
-| `DEPLOY_REMOTE_DIR`     | 服务器上的一个**目录**，用来接收上传的 jar，例如 `/home/你的用户名/incoming`（需要事先 `mkdir -p` 建好） |
-| `DEPLOY_REMOTE_COMMAND` | 上传完成后在服务器执行的**一整段 shell**（可多行），用来「把 jar 拷到真正运行目录 + 重启服务」。示例（路径请改成你的）：   |
-
-
-`DEPLOY_REMOTE_COMMAND` 示例内容（复制后改路径）：
-
-```bash
-sudo install -m 644 /home/你的用户名/incoming/home-accounting-server.jar /opt/home-accounting/home-accounting-server.jar && sudo systemctl restart home-accounting
-```
-
-说明：`scp-action` 会把文件传到 `DEPLOY_REMOTE_DIR` 下，文件名是 `home-accounting-server.jar`，所以上面 `install` 的源路径应是 `incoming` 目录下的该文件名。
-
-若 SSH 不是 22 端口：需要改仓库里 `.github/workflows/deploy-backend.yml` 里的 `port: 22`（两处），改成你的端口后再 push 一次。
+1. 右上角头像 → **Settings** → 左侧最底部 **Developer settings** → **Personal access tokens**。
+2. 新建 **Fine-grained** 或 **Classic** 令牌均可：
+   - **Classic**：私有仓库勾选 **`repo`** 即可覆盖拉取工件所需权限（最简单）。
+   - **Fine-grained**：选你的仓库，权限里打开 **Actions: Read**、**Metadata: Read**（只读）。
+3. 生成后**复制令牌字符串**（只显示一次）。不要发到聊天、不要写进 Git 仓库。
 
 ---
 
-## 第 8 步：在 GitHub 上点一下「部署」
+## 第 8 步：在服务器上用脚本拉 jar 并重启（每次要部署时执行）
 
-1. 仓库页点 **「Actions」**。
-2. 左侧选 **「Deploy backend」**。
-3. 右侧点 **「Run workflow」** → 再点绿色 **「Run workflow」**。
-4. 等它跑完；若失败，点进那条记录，看红色步骤的日志（多半是 Secret 写错、路径不对、或服务器没权限执行 `sudo`）。
+**SSH 登录服务器**，安装依赖（Ubuntu 示例）：
 
-### 卡在「Upload jar to server」很久不动，正常吗？
+```bash
+sudo apt update
+sudo apt install -y curl jq unzip
+```
 
-**不太正常。** 日志里若一直停在 `scp file to server.`，多半是 **GitHub 机房的电脑连不上你这台服务器的 SSH 端口**，不是 jar 太大。
+把仓库里的 `deploy/fetch-jar-from-github.sh` 拷到服务器（或用 `git clone` 整个项目后进入目录），例如：
 
-按下面顺序自查（仍不需要改业务代码）：
+```bash
+sudo cp /path/to/HomeAccounting/deploy/fetch-jar-from-github.sh /usr/local/bin/home-accounting-fetch-jar
+sudo chmod +x /usr/local/bin/home-accounting-fetch-jar
+```
 
-1. `**DEPLOY_HOST` 必须是公网能访问的地址**
-  填 `10.x`、`172.16.x`、`192.168.x` 这类**内网 IP**，GitHub Actions 永远连不上。要用云控制台里的**公网 IP**，或已解析到公网的域名。
-2. **云厂商「安全组 / 防火墙」要放行 SSH**
-  很多人只在自己电脑能 `ssh` 上去，是因为安全组写的是「只允许我家宽带 IP」。**GitHub 的 IP 段不在你家**，所以网页上部署会一直卡住或超时。  
-   **处理**：在阿里云 / 腾讯云 / AWS 等控制台里，给这台机器的 **入站规则** 增加：**TCP 22**，来源先设为 `0.0.0.0/0`（仅依赖密钥登录、不要用弱密码）。部署跑通后再考虑收紧来源 IP 或改用自建 Runner。
-3. **公钥要贴在「部署用的那个 Linux 用户」下面**
-  你在 GitHub Secret 里填的 `DEPLOY_USER`（例如 `ubuntu`），公钥就必须在这个用户主目录里：
-   `/home/ubuntu/.ssh/authorized_keys`（示例）
-   若密钥是在服务器上**用 root 生成**的，却把公钥只加进了 **root** 的 `authorized_keys`，而 `DEPLOY_USER` 填的是 **ubuntu**，就会认证失败（有时表现为长时间重试或超时）。  
-   **正确关系**：谁登录，就把公钥放进**谁**的 `authorized_keys`；**私钥**整段放进 GitHub 的 `DEPLOY_SSH_KEY`（在服务器上生成密钥也可以，只要私钥复制到 GitHub、公钥复制到对应用户的 `authorized_keys` 即可）。
-4. **在你自己电脑上测「外网是否通」**（把手机开热点，让电脑走热点，模拟「不在你家宽带」）：
-  ```bash
-   ssh -i 你的私钥文件路径 -o ConnectTimeout=10 -o BatchMode=yes DEPLOY_USER@DEPLOY_HOST "echo ok"
-  ```
-   若这里都连不上，先把安全组 / `DEPLOY_HOST` 修好，再重跑 GitHub 的 Deploy。
+复制环境文件并编辑（把 `GITHUB_TOKEN`、`GITHUB_OWNER`、`GITHUB_REPO`、`GITHUB_BRANCH` 改成你的；`INSTALL_DIR` 与 systemd 里 jar 路径一致）：
 
-仓库里的 `deploy-backend.yml` 使用 Runner 自带的 **`scp` / `ssh`（OpenSSH）** 上传并执行远程命令，并带有 **ConnectTimeout** 与 **整步 `timeout-minutes`**；整次部署作业最多约 **25 分钟** 会被 GitHub 强制结束，避免像旧版 `appleboy/scp-action` 那样在 Docker 里无限卡住、也不吃你填的 `timeout` 参数。
+```bash
+sudo cp /path/to/HomeAccounting/deploy/github-fetch.env.example /etc/home-accounting/github-fetch.env
+sudo nano /etc/home-accounting/github-fetch.env
+sudo chmod 600 /etc/home-accounting/github-fetch.env
+```
 
-修好网络后若仍失败，看该步红色日志里的英文报错（`Connection timed out`、`Permission denied` 等）再对症改。
+**每次要上线后端时**：先在 GitHub 跑通一次 **Build jar**（第 6 步），再在服务器执行（脚本会默认 `source /etc/home-accounting/github-fetch.env`）：
 
-若日志里已经出现 **`Permanently added ... to the list of known hosts`**（说明 TCP + SSH 认证都过了），却仍然卡在 **`scp`**：多半是客户端默认走 **SFTP 传文件**，而你服务器上的 SFTP 子系统或权限在传数据阶段挂住。当前仓库的 workflow 已改为用 **`ssh` + 标准输入写文件**（不经 `scp`/SFTP），并加 **`timeout 300`** 防止整步无限挂；请拉最新 `deploy-backend.yml` 再跑。
+```bash
+sudo /usr/local/bin/home-accounting-fetch-jar
+```
+
+若你把 env 放在别的路径：`sudo ENV_FILE=/path/to/xxx.env /usr/local/bin/home-accounting-fetch-jar`。
+
+**不想用脚本时**：也可以在 **Build jar** 成功那次运行页里 **手动下载** `home-accounting-jar.zip`，解压出 jar 后，用 `scp` 或 `sudo cp` 放到 `INSTALL_DIR`，再 `sudo systemctl restart home-accounting`。
 
 ---
 
@@ -265,6 +227,6 @@ sudo install -m 644 /home/你的用户名/incoming/home-accounting-server.jar /o
 2. **服务器**：装好 Java 17 + MySQL，建好库和用户，写好 `/etc/home-accounting.env`。
 3. **能连上 API 的 https 之后**：改 `frontend/config.js`，微信后台配域名。
 
-GitHub 自动部署（第 6～8 步）可以等你在第 4 步手动 jar 跑通后再做。
+后端发版流程：**push 代码 → CI 绿勾 →（需要发 jar 时）手动 Run「Build jar」→ 服务器执行拉包脚本或手工下载工件**。
 
 更偏「运维清单」的细节仍见：**[production-and-release.md](./production-and-release.md)**。

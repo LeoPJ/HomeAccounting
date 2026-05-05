@@ -40,7 +40,7 @@
 - `deploy/home-accounting.env.example` → 复制为 `/etc/home-accounting.env`（权限 `600`）。
 - `deploy/home-accounting.service.example` → 复制为 systemd unit，并把 `EnvironmentFile`、`ExecStart`、`User` 改成你的布局。
 
-进程需能读取 `EnvironmentFile`；Java 启动命令与 jar 路径与 CI 上传路径一致（见下文）。
+进程需能读取 `EnvironmentFile`；Java 启动命令里的 jar 路径与 **`fetch-jar-from-github.sh` 的 `INSTALL_DIR`**（或你手工放置 jar 的目录）一致。
 
 ---
 
@@ -54,35 +54,20 @@
 
 默认分支名若不同，请改 `ci.yml` 里的 `branches` 列表。
 
-### 3.2 后端部署（已接入，需你配置密钥）
+### 3.2 构建可下载的 jar（不上传服务器）
 
-- 工作流：`.github/workflows/deploy-backend.yml`
-- 触发：仅 **手动** `workflow_dispatch`（Actions 里点 Run workflow）。
-- 行为：构建 jar → SCP 到服务器目录 → 执行你提供的远程命令（安装 jar 并重启服务）。
+- 工作流：`.github/workflows/build-jar.yml`
+- 触发：仅 **手动** `workflow_dispatch`（仓库 → **Actions** → **Build jar** → **Run workflow**）。
+- 行为：`mvn verify` 后在云端生成 **`home-accounting-server.jar`**，并作为工件 **`home-accounting-jar`** 上传（默认保留 **30 天**）。
 
-**GitHub 仓库 Secrets：**
+**部署方式（推荐）**：不在 GitHub 上连你的服务器，而是在 **服务器上** 用脚本调 GitHub API 拉取**最近一次成功**的 Build jar 工件：
 
+- 脚本：`deploy/fetch-jar-from-github.sh`
+- 配置示例：`deploy/github-fetch.env.example`（复制到服务器如 `/etc/home-accounting/github-fetch.env`，`chmod 600`）
 
-| Secret                  | 说明                                                                                                                         |
-| ----------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| `DEPLOY_HOST`           | 服务器 IP 或域名。                                                                                                                |
-| `DEPLOY_USER`           | SSH 登录用户（建议专用 `deploy` 用户，仅必要目录写权限）。                                                                                       |
-| `DEPLOY_SSH_KEY`        | 该用户对应的 **私钥** 全文（`-----BEGIN ...` 起止）。                                                                                     |
-| `DEPLOY_REMOTE_DIR`     | SCP 目标目录（**目录**，不要带文件名）。上传后的文件名为 `home-accounting-server.jar`（与 CI 中一致）。                                                   |
-| `DEPLOY_REMOTE_COMMAND` | 在服务器上执行的多行 shell，例如：`sudo install` 拷贝 jar 到运行目录 + `sudo systemctl restart home-accounting`。失败应非零退出（已 `script_stop: true`）。 |
+服务器需安装 **`curl`、`jq`、`unzip`**。令牌使用 **Personal Access Token**（经典 PAT 对私有仓库需 **`repo`**；或细粒度令牌至少 **Actions: Read**、**Metadata: Read**）。**不要把 Token 写进 Git 仓库**。
 
-
-**SSH 端口**：工作流里写死为 `22`；若你使用其它端口，请改 `deploy-backend.yml` 中两处 `port: 22`。
-
-`**DEPLOY_REMOTE_COMMAND` 示例**（请按你的 `DEPLOY_REMOTE_DIR` 与 systemd 中的 jar 路径修改）：
-
-```bash
-sudo install -m 644 /opt/incoming/home-accounting-server.jar /opt/home-accounting/home-accounting-server.jar && sudo systemctl restart home-accounting
-```
-
-工作流用原生 `scp` 把 `home-accounting-server.jar` 传到 `DEPLOY_REMOTE_DIR` 目录下；`DEPLOY_REMOTE_COMMAND` 里拷贝的源路径应写该目录下的该文件名。
-
-**安全建议**：为 GitHub Actions 单独生成一对部署专用 SSH 密钥，在服务器 `authorized_keys` 里限制 `command=` 或配合最小权限 sudoers，避免泄露主密钥。
+也可在浏览器里打开该次 **Build jar** 运行详情页，从 **Artifacts** 手动下载 zip，解压得到 `home-accounting-server.jar` 后自行拷贝到服务器。
 
 ---
 
@@ -94,7 +79,8 @@ sudo install -m 644 /opt/incoming/home-accounting-server.jar /opt/home-accountin
 | 项                | 说明                                       |
 | ---------------- | ---------------------------------------- |
 | CI               | `mvn verify` 在每次推 PR / 主分支时自动跑。          |
-| 部署工作流骨架          | 构建 + SCP + SSH 执行命令；你填 Secrets 与远程脚本即可用。 |
+| Build jar 工作流   | 手动触发后在 GitHub 上生成可下载的 jar 工件。            |
+| 服务器拉包脚本         | `deploy/fetch-jar-from-github.sh` + `github-fetch.env.example` |
 | 环境变量清单与示例        | 本文档 + `deploy/*.example`。                |
 | systemd / env 模板 | 按需复制到服务器后修改。                             |
 
@@ -108,9 +94,9 @@ sudo install -m 644 /opt/incoming/home-accounting-server.jar /opt/home-accountin
 | 服务器            | 安装 Java 17、MySQL；创建库 `home_accounting` 与用户；配置防火墙（仅开放 443/80 与 SSH 等）。                          |
 | 反向代理与 HTTPS    | Nginx（或 Caddy）终止 TLS，反代到本机 `127.0.0.1:8080`；申请证书。                                              |
 | 环境变量           | 将 `deploy/home-accounting.env.example` 落实为 `/etc/home-accounting.env`（或等价方式），填写全部必填项。          |
-| 首次部署 jar       | 可手动拷 jar 跑通一次，再接入 GitHub Actions；或直接用 `Deploy backend` workflow。                               |
-| systemd        | 安装 unit，保证 `ExecStart` 指向最终 jar 路径，与 `DEPLOY_REMOTE_COMMAND` 里拷贝目标一致。                          |
-| GitHub Secrets | 按上文表配置；`DEPLOY_REMOTE_COMMAND` 与服务器目录约定一致。                                                     |
+| 首次部署 jar       | 本机 `mvn` 打包 SCP、或跑 **Build jar** 后浏览器下载工件、或在服务器执行 `fetch-jar-from-github.sh`。                    |
+| systemd        | 安装 unit，保证 `ExecStart` 指向最终 jar 路径（与 `INSTALL_DIR` / 脚本安装目录一致）。                               |
+| GitHub Token   | 仅在服务器环境文件里配置（见 `github-fetch.env.example`），用于脚本拉取工件，**勿提交仓库**。                                  |
 | 小程序            | `frontend/config.js` 的 `API_BASE` 改为线上 `https://...`；微信公众平台配置 **request 合法域名**；真机关闭「不校验域名」测一遍。 |
 | 微信与合规          | 类目、隐私指引、用户协议链接、审核说明与测试账号（如需要）。                                                                 |
 | 回归             | 真机全流程：登录、记账、流水、报表、我的；弱网 / 401。                                                                 |
@@ -122,7 +108,7 @@ sudo install -m 644 /opt/incoming/home-accounting-server.jar /opt/home-accountin
 1. 服务器：MySQL + JDK + env 文件 + systemd（先手动 `java -jar` 或 `systemctl` 验证能启动）。
 2. Nginx HTTPS → 用 curl 测通健康接口（如有）或任意 API。
 3. 小程序改 `API_BASE` → 开发者工具与真机验证。
-4. GitHub 配 Secrets → 跑一次 **Deploy backend** → 再测小程序。
+4. 需要发版后端时：GitHub 跑一次 **Build jar** → 服务器执行拉包脚本（或手工下载工件）→ 再测小程序。
 5. 微信提交审核 → 通过后发布。
 
 ---
@@ -142,4 +128,4 @@ sudo install -m 644 /opt/incoming/home-accounting-server.jar /opt/home-accountin
 | 错误监控 / 日志告警        | **你按需**接入云厂商或自建             |
 
 
-若你希望 CI 在 **打 tag** 时自动部署，可在 `deploy-backend.yml` 增加 `push: tags: ['v*']` 并自行评估误触风险。
+若希望 **推送 tag 时自动构建 jar**，可在 `build-jar.yml` 的 `on:` 下增加 `push: tags: ['v*']`（仍不会自动推到你服务器，只是多一种触发构建的方式）。
