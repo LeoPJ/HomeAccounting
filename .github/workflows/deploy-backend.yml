@@ -1,5 +1,8 @@
 # 手动触发：GitHub → Actions → Deploy backend → Run workflow。
 # 密钥与变量见 docs/production-and-release.md。
+#
+# 上传改用 Runner 自带的 scp/ssh（不再使用 appleboy/scp-action）：drone-scp 在部分网络下
+# 会长时间卡在「scp file to server」且超时参数不生效；OpenSSH 的 ConnectTimeout 更可靠。
 
 name: Deploy backend
 
@@ -9,6 +12,7 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
 
@@ -30,27 +34,42 @@ jobs:
           test -f "$JAR"
           cp "$JAR" release/home-accounting-server.jar
 
-      # timeout：连不上服务器时尽快失败，避免「卡住十几分钟」像死机（常见原因是安全组未放行公网 SSH）
-      - name: Upload jar to server
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.DEPLOY_HOST }}
-          username: ${{ secrets.DEPLOY_USER }}
-          key: ${{ secrets.DEPLOY_SSH_KEY }}
-          port: 22
-          timeout: 2m
-          command_timeout: 5m
-          source: release/home-accounting-server.jar
-          target: ${{ secrets.DEPLOY_REMOTE_DIR }}
+      - name: Write deploy SSH key
+        run: |
+          set -e
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/github_deploy_key
+          chmod 600 ~/.ssh/github_deploy_key
 
-      - name: Remote install and restart
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.DEPLOY_HOST }}
-          username: ${{ secrets.DEPLOY_USER }}
-          key: ${{ secrets.DEPLOY_SSH_KEY }}
-          port: 22
-          timeout: 2m
-          command_timeout: 5m
-          script_stop: true
-          script: ${{ secrets.DEPLOY_REMOTE_COMMAND }}
+      # 整步最多 6 分钟：到时 GitHub 会强制结束本步（比 docker 内 drone-scp 不遵守超时更可控）
+      - name: Upload jar to server (native scp)
+        timeout-minutes: 6
+        run: |
+          set -euo pipefail
+          DEST="${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.DEPLOY_REMOTE_DIR }}/"
+          scp -i "$HOME/.ssh/github_deploy_key" \
+            -o BatchMode=yes \
+            -o StrictHostKeyChecking=accept-new \
+            -o ConnectTimeout=30 \
+            -o ConnectionAttempts=1 \
+            -o ServerAliveInterval=15 \
+            -o ServerAliveCountMax=4 \
+            release/home-accounting-server.jar \
+            "$DEST"
+
+      - name: Remote install and restart (native ssh)
+        timeout-minutes: 6
+        env:
+          REMOTE_CMD: ${{ secrets.DEPLOY_REMOTE_COMMAND }}
+        run: |
+          set -euo pipefail
+          echo "$REMOTE_CMD" | ssh -i "$HOME/.ssh/github_deploy_key" \
+            -o BatchMode=yes \
+            -o StrictHostKeyChecking=accept-new \
+            -o ConnectTimeout=30 \
+            -o ConnectionAttempts=1 \
+            -o ServerAliveInterval=15 \
+            -o ServerAliveCountMax=4 \
+            '${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}' \
+            'bash -euo pipefail -s'

@@ -80,7 +80,7 @@
 sudo install -m 644 /opt/incoming/home-accounting-server.jar /opt/home-accounting/home-accounting-server.jar && sudo systemctl restart home-accounting
 ```
 
-若 `scp-action` 将文件直接落在 `DEPLOY_REMOTE_DIR` 下且文件名为 `home-accounting-server.jar`，则命令里源路径应写该目录下的该文件名。
+工作流用原生 `scp` 把 `home-accounting-server.jar` 传到 `DEPLOY_REMOTE_DIR` 目录下；`DEPLOY_REMOTE_COMMAND` 里拷贝的源路径应写该目录下的该文件名。
 
 **安全建议**：为 GitHub Actions 单独生成一对部署专用 SSH 密钥，在服务器 `authorized_keys` 里限制 `command=` 或配合最小权限 sudoers，避免泄露主密钥。
 

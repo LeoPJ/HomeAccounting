@@ -240,7 +240,9 @@ sudo install -m 644 /home/你的用户名/incoming/home-accounting-server.jar /o
   ```
    若这里都连不上，先把安全组 / `DEPLOY_HOST` 修好，再重跑 GitHub 的 Deploy。
 
-仓库里的 `deploy-backend.yml` 已为 SCP/SSH 步骤加了**超时时间**，避免无限挂住；修好网络后若仍失败，看该步红色日志里的英文报错（`Permission denied`、`Connection timed out` 等）再对症改。
+仓库里的 `deploy-backend.yml` 使用 Runner 自带的 **`scp` / `ssh`（OpenSSH）** 上传并执行远程命令，并带有 **ConnectTimeout** 与 **整步 `timeout-minutes`**；整次部署作业最多约 **25 分钟** 会被 GitHub 强制结束，避免像旧版 `appleboy/scp-action` 那样在 Docker 里无限卡住、也不吃你填的 `timeout` 参数。
+
+修好网络后若仍失败，看该步红色日志里的英文报错（`Connection timed out`、`Permission denied` 等）再对症改。
 
 ---
 
