@@ -1,0 +1,157 @@
+.shell {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #e8eefb 0%, #f4f6fb 220rpx);
+}
+
+.scroll {
+  max-height: 100vh;
+  padding: 24rpx 28rpx 48rpx;
+  box-sizing: border-box;
+}
+
+.muted {
+  color: #64748b;
+  font-size: 28rpx;
+  padding: 48rpx;
+}
+
+.hero {
+  margin-bottom: 24rpx;
+}
+
+.hero-title {
+  font-size: 42rpx;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.hero-sub {
+  display: block;
+  margin-top: 12rpx;
+  font-size: 24rpx;
+  color: #64748b;
+  line-height: 1.45;
+}
+
+.card {
+  background: #fff;
+  border-radius: 22rpx;
+  padding: 28rpx;
+  margin-bottom: 20rpx;
+  box-shadow: 0 10rpx 36rpx rgba(15, 23, 42, 0.06);
+}
+
+.card-title {
+  font-size: 28rpx;
+  font-weight: 700;
+  color: #334155;
+  margin-bottom: 16rpx;
+}
+
+.hint {
+  display: block;
+  font-size: 26rpx;
+  color: #64748b;
+  margin-bottom: 20rpx;
+}
+
+.btn-primary {
+  border-radius: 16rpx !important;
+  font-weight: 600;
+  background: linear-gradient(135deg, #4f46e5, #4338ca) !important;
+}
+
+.profile-card {
+  display: flex;
+  align-items: center;
+  gap: 24rpx;
+  background: #fff;
+  border-radius: 22rpx;
+  padding: 32rpx;
+  margin-bottom: 20rpx;
+  box-shadow: 0 10rpx 36rpx rgba(15, 23, 42, 0.06);
+}
+
+.avatar {
+  width: 112rpx;
+  height: 112rpx;
+  border-radius: 50%;
+}
+
+.avatar.placeholder {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: #fff;
+  font-size: 40rpx;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.profile-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.nick {
+  display: block;
+  font-size: 34rpx;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.uid {
+  display: block;
+  margin-top: 8rpx;
+  font-size: 24rpx;
+  color: #94a3b8;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  padding: 14rpx 0;
+  border-bottom: 1rpx solid #f1f5f9;
+  font-size: 28rpx;
+}
+
+.row:last-child {
+  border-bottom: none;
+}
+
+.k {
+  color: #94a3b8;
+}
+
+.v {
+  color: #0f172a;
+  text-align: right;
+  max-width: 420rpx;
+  word-break: break-all;
+}
+
+.mono {
+  font-family: monospace;
+  font-size: 26rpx;
+}
+
+.actions .btn-line {
+  margin-bottom: 16rpx;
+  border-radius: 16rpx !important;
+  font-weight: 600;
+  background: #f8fafc !important;
+  color: #334155 !important;
+}
+
+.actions .btn-line.danger {
+  color: #dc2626 !important;
+  background: #fef2f2 !important;
+}
+
+.actions .btn-line:last-child {
+  margin-bottom: 0;
+}
+
+.bottom-space {
+  height: 40rpx;
+}

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.homeaccounting.mapper.ReportTemplateMapper">
+
+  <resultMap id="BaseResultMap" type="com.homeaccounting.entity.ReportTemplate">
+    <id column="id" jdbcType="BIGINT" property="id"/>
+    <result column="household_id" jdbcType="BIGINT" property="householdId"/>
+    <result column="name" jdbcType="VARCHAR" property="name"/>
+    <result column="definition" jdbcType="VARCHAR" property="definition"/>
+    <result column="created_by" jdbcType="BIGINT" property="createdBy"/>
+    <result column="created_at" jdbcType="TIMESTAMP" property="createdAt"/>
+    <result column="updated_at" jdbcType="TIMESTAMP" property="updatedAt"/>
+  </resultMap>
+
+  <sql id="Base_Column_List">
+    id, household_id, name, definition, created_by, created_at, updated_at
+  </sql>
+
+  <insert id="insert" parameterType="com.homeaccounting.entity.ReportTemplate" useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO report_templates (household_id, name, definition, created_by, created_at, updated_at)
+    VALUES (#{householdId,jdbcType=BIGINT}, #{name,jdbcType=VARCHAR}, #{definition,jdbcType=VARCHAR},
+            #{createdBy,jdbcType=BIGINT}, NOW(3), NOW(3))
+  </insert>
+
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap">
+    SELECT <include refid="Base_Column_List"/> FROM report_templates WHERE id = #{id,jdbcType=BIGINT}
+  </select>
+
+  <select id="selectByHouseholdId" resultMap="BaseResultMap">
+    SELECT <include refid="Base_Column_List"/> FROM report_templates
+    WHERE household_id = #{householdId,jdbcType=BIGINT}
+    ORDER BY updated_at DESC, id DESC
+  </select>
+
+  <select id="selectByHouseholdIdAndName" resultMap="BaseResultMap">
+    SELECT <include refid="Base_Column_List"/> FROM report_templates
+    WHERE household_id = #{householdId,jdbcType=BIGINT} AND name = #{name,jdbcType=VARCHAR}
+  </select>
+
+  <update id="updateByPrimaryKeySelective" parameterType="com.homeaccounting.entity.ReportTemplate">
+    UPDATE report_templates
+    <set>
+      <if test="name != null">name = #{name,jdbcType=VARCHAR},</if>
+      <if test="definition != null">definition = #{definition,jdbcType=VARCHAR},</if>
+      updated_at = NOW(3),
+    </set>
+    WHERE id = #{id,jdbcType=BIGINT}
+  </update>
+
+  <delete id="deleteByPrimaryKey">
+    DELETE FROM report_templates WHERE id = #{id,jdbcType=BIGINT}
+  </delete>
+</mapper>

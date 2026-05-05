@@ -1,0 +1,61 @@
+{
+  "pages": [
+    "pages/ledger/ledger",
+    "pages/ledger-detail/ledger-detail",
+    "pages/txn-add/txn-add",
+    "pages/txn-edit/txn-edit",
+    "pages/report/report",
+    "pages/report-editor/report-editor",
+    "pages/settings/settings",
+    "pages/me/me",
+    "pages/household/household",
+    "pages/logs/logs"
+  ],
+  "window": {
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "小家记账",
+    "navigationBarBackgroundColor": "#f4f6fb"
+  },
+  "tabBar": {
+    "color": "#666666",
+    "selectedColor": "#2563eb",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/ledger/ledger",
+        "text": "账户",
+        "iconPath": "images/tab/item.png",
+        "selectedIconPath": "images/tab/item.png"
+      },
+      {
+        "pagePath": "pages/txn-add/txn-add",
+        "text": "记一笔",
+        "iconPath": "images/tab/item.png",
+        "selectedIconPath": "images/tab/item.png"
+      },
+      {
+        "pagePath": "pages/report/report",
+        "text": "报表",
+        "iconPath": "images/tab/item.png",
+        "selectedIconPath": "images/tab/item.png"
+      },
+      {
+        "pagePath": "pages/settings/settings",
+        "text": "设置",
+        "iconPath": "images/tab/item.png",
+        "selectedIconPath": "images/tab/item.png"
+      },
+      {
+        "pagePath": "pages/me/me",
+        "text": "我的",
+        "iconPath": "images/tab/item.png",
+        "selectedIconPath": "images/tab/item.png"
+      }
+    ]
+  },
+  "style": "v2",
+  "componentFramework": "glass-easel",
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents"
+}

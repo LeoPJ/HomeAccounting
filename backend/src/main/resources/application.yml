@@ -1,0 +1,33 @@
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: com.homeaccounting.entity
+
+server:
+  port: ${SERVER_PORT:8080}
+
+# 浏览器 / 开发者工具跨域；微信小程序 request 不依赖 CORS，但预留无妨
+app:
+  cors:
+    allowed-origin-patterns: ${APP_CORS_ORIGIN_PATTERNS:*}
+  auth:
+    jwt-secret: ${JWT_SECRET:}
+    jwt-expiration: ${JWT_EXPIRATION:7d}
+    wechat-app-id: ${WECHAT_MINI_APP_ID:}
+    wechat-app-secret: ${WECHAT_MINI_APP_SECRET:}
+    dev-login-enabled: ${DEV_LOGIN_ENABLED:false}
+    dev-login-secret: ${DEV_LOGIN_SECRET:}
+
+spring:
+  datasource:
+    url: jdbc:mysql://${DB_HOST:127.0.0.1}:${DB_PORT:3306}/home_accounting?useSSL=false&characterEncoding=utf8&serverTimezone=Asia/Shanghai
+    username: ${DB_USER:home_accounting}
+    password: ${DB_PASSWORD:}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    table: flyway_schema_history
+    # 库已由手工/SQL 建好、尚无 flyway_schema_history 时：只做基线登记，不重复执行 V1
+    baseline-on-migrate: true
+    baseline-version: 2
+    baseline-description: existing schema before Flyway

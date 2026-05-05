@@ -1,0 +1,47 @@
+<view class="shell">
+  <view wx:if="{{loading}}" class="muted">加载中…</view>
+  <scroll-view wx:else scroll-y class="scroll">
+    <view class="hero">
+      <text class="hero-title">我的</text>
+      <text class="hero-sub">账号与家庭信息；发布前请在 config.js 配置正式 API 域名</text>
+    </view>
+
+    <view wx:if="{{error && !profile}}" class="card">
+      <text class="hint">{{error}}</text>
+      <button class="btn-primary" bindtap="refreshLogin">微信登录</button>
+    </view>
+
+    <view wx:if="{{profile}}" class="profile-card">
+      <image wx:if="{{profile.avatarUrl}}" class="avatar" src="{{profile.avatarUrl}}" mode="aspectFill" />
+      <view wx:else class="avatar placeholder">账</view>
+      <view class="profile-text">
+        <text class="nick">{{profile.nickname || '微信用户'}}</text>
+        <text class="uid">用户 ID · {{profile.userId}}</text>
+      </view>
+    </view>
+
+    <view wx:if="{{household && household.joined}}" class="card">
+      <text class="card-title">当前家庭</text>
+      <view class="row">
+        <text class="k">名称</text>
+        <text class="v">{{household.name}}</text>
+      </view>
+      <view class="row">
+        <text class="k">邀请码</text>
+        <text class="v mono">{{household.inviteCode}}</text>
+      </view>
+      <view class="row">
+        <text class="k">角色</text>
+        <text class="v">{{household.role}}</text>
+      </view>
+    </view>
+
+    <view class="card actions">
+      <button class="btn-line" bindtap="goHousehold">家庭 / 邀请码</button>
+      <button class="btn-line" bindtap="goSettings">分类与标签设置</button>
+      <button class="btn-line danger" bindtap="logout">退出登录</button>
+    </view>
+
+    <view class="bottom-space"></view>
+  </scroll-view>
+</view>

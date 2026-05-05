@@ -1,0 +1,45 @@
+<view class="shell">
+  <view wx:if="{{loading}}" class="muted">加载中…</view>
+  <scroll-view wx:else scroll-y class="scroll">
+    <view class="hero">
+      <text class="hero-title">设置</text>
+      <text class="hero-sub">维护支出/收入分类与标签；账本与资金账户请在「账户」页管理</text>
+    </view>
+
+    <view class="section-title">分类</view>
+    <view class="seg">
+      <button size="mini" class="seg-btn {{catType === 'EXPENSE' ? 'seg-on' : ''}}" bindtap="onCatTypeExpense">支出</button>
+      <button size="mini" class="seg-btn {{catType === 'INCOME' ? 'seg-on' : ''}}" bindtap="onCatTypeIncome">收入</button>
+    </view>
+    <view class="card tight">
+      <view class="add-row">
+        <input class="input flex1" placeholder="新分类名称" value="{{newCatName}}" bindinput="onNewCatInput" />
+        <button size="mini" type="primary" loading="{{savingCat}}" bindtap="addCategory">添加</button>
+      </view>
+    </view>
+    <text class="sub-label">支出类</text>
+    <view wx:for="{{catsExpense}}" wx:key="id" class="list-row">
+      <text class="list-row-text">{{item.name}}</text>
+      <button size="mini" class="btn-danger-soft" data-id="{{item.id}}" bindtap="deleteCategory">删除</button>
+    </view>
+    <text class="sub-label">收入类</text>
+    <view wx:for="{{catsIncome}}" wx:key="id" class="list-row">
+      <text class="list-row-text">{{item.name}}</text>
+      <button size="mini" class="btn-danger-soft" data-id="{{item.id}}" bindtap="deleteCategory">删除</button>
+    </view>
+
+    <view class="section-title">标签</view>
+    <view class="card tight">
+      <view class="add-row">
+        <input class="input flex1" placeholder="新标签名称" value="{{newTagName}}" bindinput="onNewTagInput" />
+        <button size="mini" type="primary" loading="{{savingTag}}" bindtap="addTag">添加</button>
+      </view>
+    </view>
+    <view wx:for="{{tags}}" wx:key="id" class="list-row">
+      <text class="list-row-text">{{item.name}}</text>
+      <button size="mini" class="btn-danger-soft" data-id="{{item.id}}" bindtap="deleteTag">删除</button>
+    </view>
+
+    <view class="bottom-space"></view>
+  </scroll-view>
+</view>

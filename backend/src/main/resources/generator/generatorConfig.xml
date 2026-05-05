@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE generatorConfiguration
+        PUBLIC "-//mybatis.org//DTD MyBatis Generator Configuration 1.0//EN"
+        "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd">
+
+<generatorConfiguration>
+  <properties resource="generator/generator.properties"/>
+
+  <context id="home_accounting" targetRuntime="MyBatis3" defaultModelType="flat">
+    <property name="autoDelimitKeywords" value="true"/>
+    <property name="beginningDelimiter" value="`"/>
+    <property name="endingDelimiter" value="`"/>
+    <property name="javaFileEncoding" value="UTF-8"/>
+
+    <jdbcConnection driverClass="${jdbc.driver}"
+                    connectionURL="${jdbc.url}"
+                    userId="${jdbc.user}"
+                    password="${jdbc.password}">
+      <property name="nullCatalogMeansCurrent" value="true"/>
+    </jdbcConnection>
+
+    <javaTypeResolver>
+      <property name="forceBigDecimals" value="true"/>
+      <property name="useJSR310Types" value="true"/>
+    </javaTypeResolver>
+
+    <javaModelGenerator targetPackage="com.homeaccounting.entity"
+                        targetProject="src/main/java"/>
+    <sqlMapGenerator targetPackage="mapper"
+                     targetProject="src/main/resources"/>
+    <javaClientGenerator type="XMLMAPPER"
+                         targetPackage="com.homeaccounting.mapper"
+                         targetProject="src/main/java"/>
+
+    <table schema="home_accounting" tableName="users" domainObjectName="User">
+      <generatedKey column="id" sqlStatement="MySql" identity="true"/>
+    </table>
+    <table schema="home_accounting" tableName="households" domainObjectName="Household">
+      <generatedKey column="id" sqlStatement="MySql" identity="true"/>
+    </table>
+    <table schema="home_accounting" tableName="household_members" domainObjectName="HouseholdMember">
+      <generatedKey column="id" sqlStatement="MySql" identity="true"/>
+    </table>
+    <table schema="home_accounting" tableName="ledgers" domainObjectName="Ledger">
+      <generatedKey column="id" sqlStatement="MySql" identity="true"/>
+    </table>
+    <table schema="home_accounting" tableName="fund_accounts" domainObjectName="FundAccount">
+      <generatedKey column="id" sqlStatement="MySql" identity="true"/>
+    </table>
+    <table schema="home_accounting" tableName="categories" domainObjectName="Category">
+      <generatedKey column="id" sqlStatement="MySql" identity="true"/>
+    </table>
+    <table schema="home_accounting" tableName="tags" domainObjectName="Tag">
+      <generatedKey column="id" sqlStatement="MySql" identity="true"/>
+    </table>
+    <table schema="home_accounting" tableName="transactions" domainObjectName="AcctTransaction">
+      <generatedKey column="id" sqlStatement="MySql" identity="true"/>
+    </table>
+    <table schema="home_accounting" tableName="transaction_tags" domainObjectName="TransactionTag"/>
+  </context>
+</generatorConfiguration>

@@ -1,0 +1,15 @@
+<view class="wrap">
+  <view class="section">
+    <view class="title">创建新家庭</view>
+    <input class="input" placeholder="家庭名称" value="{{createName}}" bindinput="onNameInput" maxlength="64" />
+    <button type="primary" bindtap="onCreate" loading="{{creating}}" disabled="{{creating}}">创建</button>
+  </view>
+
+  <view class="divider">或</view>
+
+  <view class="section">
+    <view class="title">加入已有家庭</view>
+    <input class="input" placeholder="邀请码" value="{{inviteCode}}" bindinput="onCodeInput" maxlength="16" />
+    <button bindtap="onJoin" loading="{{joining}}" disabled="{{joining}}">加入</button>
+  </view>
+</view>

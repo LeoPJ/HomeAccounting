@@ -1,0 +1,210 @@
+.shell {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #e8eefb 0%, #f4f6fb 220rpx);
+}
+
+.scroll {
+  max-height: 100vh;
+  padding: 24rpx 28rpx 48rpx;
+  box-sizing: border-box;
+}
+
+.muted {
+  color: #64748b;
+  font-size: 28rpx;
+  padding: 48rpx;
+}
+
+.hero {
+  margin-bottom: 28rpx;
+}
+
+.hero-title {
+  font-size: 42rpx;
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: 1rpx;
+}
+
+.hero-sub {
+  display: block;
+  margin-top: 12rpx;
+  font-size: 24rpx;
+  color: #475569;
+  line-height: 1.5;
+}
+
+.section-label {
+  font-size: 26rpx;
+  font-weight: 700;
+  color: #334155;
+  margin-bottom: 14rpx;
+  letter-spacing: 1rpx;
+}
+
+.section-label.mt {
+  margin-top: 36rpx;
+}
+
+.card {
+  background: #fff;
+  border-radius: 22rpx;
+  padding: 28rpx;
+  margin-bottom: 22rpx;
+  box-shadow: 0 10rpx 36rpx rgba(37, 99, 235, 0.06);
+  border: 1rpx solid rgba(255, 255, 255, 0.8);
+}
+
+.card-title {
+  font-size: 26rpx;
+  font-weight: 600;
+  color: #334155;
+  margin-bottom: 16rpx;
+}
+
+.card-hint {
+  display: block;
+  font-size: 24rpx;
+  color: #94a3b8;
+  margin-bottom: 20rpx;
+  line-height: 1.45;
+}
+
+.field-col {
+  margin-bottom: 20rpx;
+}
+
+.field-label {
+  display: block;
+  font-size: 24rpx;
+  color: #64748b;
+  margin-bottom: 10rpx;
+}
+
+.add-row {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.input {
+  flex: 1;
+  padding: 20rpx 24rpx;
+  background: #f1f5f9;
+  border-radius: 14rpx;
+  font-size: 28rpx;
+}
+
+.input.full {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.btn-create {
+  border-radius: 14rpx !important;
+  font-weight: 600;
+  background: #fff !important;
+  color: #4f46e5 !important;
+  border: 2rpx solid #c7d2fe !important;
+}
+
+.btn-create.full {
+  width: 100%;
+  margin-top: 12rpx;
+  padding: 22rpx !important;
+  border-radius: 16rpx !important;
+}
+
+.empty {
+  background: rgba(255, 255, 255, 0.85);
+  border-radius: 20rpx;
+  padding: 32rpx;
+  font-size: 26rpx;
+  color: #64748b;
+  margin-bottom: 20rpx;
+  border: 2rpx dashed #cbd5e1;
+}
+
+.empty.tight {
+  padding: 24rpx;
+}
+
+.ledger-card {
+  background: #fff;
+  border-radius: 22rpx;
+  padding: 28rpx;
+  margin-bottom: 16rpx;
+  box-shadow: 0 8rpx 28rpx rgba(15, 23, 42, 0.05);
+  border: 1rpx solid rgba(15, 23, 42, 0.05);
+}
+
+.ledger-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.ledger-name {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.chev {
+  font-size: 26rpx;
+  color: #6366f1;
+  font-weight: 500;
+}
+
+.ledger-id {
+  display: block;
+  margin-top: 10rpx;
+  font-size: 22rpx;
+  color: #94a3b8;
+}
+
+.fund-card {
+  background: #fff;
+  border-radius: 18rpx;
+  padding: 24rpx 28rpx;
+  margin-bottom: 12rpx;
+  border: 1rpx solid #eef2f7;
+}
+
+.fund-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.fund-name {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.fund-chev {
+  font-size: 26rpx;
+  color: #6366f1;
+  font-weight: 500;
+}
+
+.fund-bal {
+  display: block;
+  margin-top: 10rpx;
+  font-size: 28rpx;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: #1e293b;
+}
+
+.fund-id {
+  display: block;
+  margin-top: 6rpx;
+  font-size: 22rpx;
+  color: #94a3b8;
+}
+
+.bottom-space {
+  height: 36rpx;
+}

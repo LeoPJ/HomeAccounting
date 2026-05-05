@@ -1,0 +1,112 @@
+<view class="shell" wx:if="{{loading}}">
+  <text class="muted">加载中…</text>
+</view>
+
+<scroll-view wx:else scroll-y class="shell scroll">
+  <view class="hero">
+    <text class="hero-title">{{templateId ? '编辑报表模板' : '新建报表模板'}}</text>
+    <text class="hero-sub">筛选、维度、指标将组装为 JSON 保存到云端</text>
+  </view>
+
+  <view class="card">
+    <text class="label">模板名称</text>
+    <input class="input line" placeholder="例如：本月分类支出" value="{{templateName}}" bindinput="onNameInput" />
+  </view>
+
+  <view class="card">
+    <view class="card-head">
+      <text class="card-title">筛选条件</text>
+      <button size="mini" class="btn-ghost" bindtap="addFilterRow">＋ 添加</button>
+    </view>
+    <text wx:if="{{filterRows.length === 0}}" class="muted small">不添加则不限定筛选范围；点击「添加」后须填完整每条条件</text>
+    <view wx:for="{{filterRowsPrepared}}" wx:key="_idx" class="filter-block">
+      <view class="filter-head">
+        <text class="filter-tag">条件 {{item._idx + 1}}</text>
+        <text class="link-remove" data-index="{{item._idx}}" bindtap="removeFilterRow" wx:if="{{filterRows.length > 0}}">移除</text>
+      </view>
+      <picker mode="selector" range="{{schema.filterFields}}" range-key="label" value="{{item._fieldIdx}}" data-index="{{item._idx}}" bindchange="onFilterFieldChange">
+        <view class="picker-line">字段：{{schema.filterFields[item._fieldIdx].label}}</view>
+      </picker>
+      <picker mode="selector" range="{{item._ops}}" value="{{item._opIdx}}" data-index="{{item._idx}}" bindchange="onFilterOpChange">
+        <view class="picker-line">运算符：{{item.op}}</view>
+      </picker>
+      <block wx:if="{{item.op === 'between'}}">
+        <input class="input line mt" placeholder="开始时间 ISO，如 2026-05-01T00:00:00" value="{{item.from}}" data-index="{{item._idx}}" bindinput="onFilterFrom" />
+        <input class="input line mt" placeholder="结束时间" value="{{item.to}}" data-index="{{item._idx}}" bindinput="onFilterTo" />
+      </block>
+      <block wx:elif="{{item.op === 'in'}}">
+        <input class="input line mt" placeholder="多个用英文逗号分隔" value="{{item.listStr}}" data-index="{{item._idx}}" bindinput="onFilterList" />
+      </block>
+      <block wx:elif="{{item.op !== 'is_null' && item.op !== 'is_not_null'}}">
+        <input class="input line mt" placeholder="比较值 / 单个枚举 / 单个 ID" value="{{item.single}}" data-index="{{item._idx}}" bindinput="onFilterSingle" />
+      </block>
+    </view>
+  </view>
+
+  <view class="card">
+    <text class="card-title">聚合维度（多选）</text>
+    <checkbox-group bindchange="onDimsChange">
+      <label wx:for="{{dimChoices}}" wx:key="id" class="dim-line">
+        <checkbox value="{{item.id}}" checked="{{item.checked}}" />
+        <text>{{item.label}}</text>
+      </label>
+    </checkbox-group>
+  </view>
+
+  <view class="card">
+    <view class="card-head">
+      <text class="card-title">指标</text>
+      <button size="mini" class="btn-ghost" bindtap="addMetricRow">＋ 添加</button>
+    </view>
+    <view wx:for="{{metricRowsPrepared}}" wx:key="_idx" class="metric-block">
+      <view class="filter-head">
+        <text class="filter-tag">指标 {{item._idx + 1}}</text>
+        <text class="link-remove" data-index="{{item._idx}}" bindtap="removeMetricRow" wx:if="{{metricRows.length > 1}}">移除</text>
+      </view>
+      <input class="input line" placeholder="别名（字母开头）如 total" value="{{item.alias}}" data-index="{{item._idx}}" bindinput="onMetricAlias" />
+      <picker mode="selector" range="{{schema.metricFunctions}}" range-key="label" value="{{item._fnIdx}}" data-index="{{item._idx}}" bindchange="onMetricFnChange">
+        <view class="picker-line">聚合：{{schema.metricFunctions[item._fnIdx].label}}</view>
+      </picker>
+      <view wx:if="{{item._needsField}}" class="hint-line">金额字段固定为 amount</view>
+    </view>
+  </view>
+
+  <view class="card">
+    <view class="card-head">
+      <text class="card-title">排序（可选）</text>
+      <button size="mini" class="btn-ghost" bindtap="addSortRow">＋ 添加</button>
+    </view>
+    <view wx:if="{{!sortRows.length}}" class="muted small">未配置则按数据库默认顺序</view>
+    <view wx:for="{{sortRowsPrepared}}" wx:key="_idx" class="sort-block">
+      <view class="filter-head">
+        <text class="filter-tag">排序 {{item._idx + 1}}</text>
+        <text class="link-remove" data-index="{{item._idx}}" bindtap="removeSortRow">移除</text>
+      </view>
+      <picker mode="selector" range="{{sortKeyOptions}}" range-key="label" value="{{item._keyIdx}}" data-index="{{item._idx}}" bindchange="onSortKeyChange">
+        <view class="picker-line">字段：{{sortKeyOptions[item._keyIdx].label}}</view>
+      </picker>
+      <picker mode="selector" range="{{['升序 ASC','降序 DESC']}}" value="{{item._dirIdx}}" data-index="{{item._idx}}" bindchange="onSortDirChange">
+        <view class="picker-line">方向：{{item.dir || 'ASC'}}</view>
+      </picker>
+    </view>
+  </view>
+
+  <view class="card row-inline">
+    <text class="label tight">结果行数上限</text>
+    <input class="input short" type="number" value="{{limitStr}}" bindinput="onLimitInput" />
+  </view>
+
+  <view class="btn-row">
+    <button type="primary" class="btn-main" loading="{{saving}}" bindtap="onSave">保存到云端</button>
+    <button wx:if="{{templateId}}" class="btn-danger" bindtap="onDelete">删除模板</button>
+  </view>
+
+  <view class="card subtle">
+    <button size="mini" class="btn-ghost full" bindtap="toggleSchemaRef">{{showSchemaRef ? '收起' : '展开'}} DSL 参考 JSON（GET /reports/schema）</button>
+    <scroll-view wx:if="{{showSchemaRef}}" scroll-y class="schema-ref">
+      <text class="mono">{{schemaRefText}}</text>
+    </scroll-view>
+  </view>
+
+  <view class="bottom-space"></view>
+</scroll-view>

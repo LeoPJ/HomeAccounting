@@ -1,0 +1,16 @@
+# 仅本地使用。激活 Spring profile：mvn spring-boot:run -Plocal-dev
+# 或 PowerShell：$env:SPRING_PROFILES_ACTIVE="dev"; mvn spring-boot:run
+# 勿在云上将 spring.profiles.active=dev 用于上线。
+
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+app:
+  auth:
+    # 覆盖 application.yml 中空 JWT_SECRET，避免本地未设环境变量时启动失败（切勿用于生产）
+    jwt-secret: local-dev-jwt-secret-not-for-production-use!!
+    # 本地免配环境变量即可调 POST /api/v1/auth/dev/login（仅 dev profile 下）
+    dev-login-enabled: true
+    dev-login-secret: local-only-dev-secret

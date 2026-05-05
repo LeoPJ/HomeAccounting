@@ -1,0 +1,15 @@
+/** 全局主题：小家记账 */
+page {
+  font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, 'PingFang SC',
+    'Microsoft YaHei', sans-serif;
+  background-color: #f4f6fb;
+  color: #0f172a;
+  font-size: 28rpx;
+}
+
+/* 兼容旧 demo 容器 */
+.container {
+  min-height: 100vh;
+  padding: 48rpx 32rpx;
+  box-sizing: border-box;
+}

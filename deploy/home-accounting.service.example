@@ -1,0 +1,24 @@
+# 复制到服务器 /etc/systemd/system/home-accounting.service 后：
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now home-accounting
+#
+# 将 User/Group、WorkingDirectory、ExecStart、EnvironmentFile 改成你的路径与配置。
+
+[Unit]
+Description=Home Accounting API (Spring Boot)
+After=network.target mysql.service
+
+[Service]
+Type=simple
+User=deploy
+Group=deploy
+WorkingDirectory=/opt/home-accounting
+ExecStart=/usr/bin/java -jar /opt/home-accounting/home-accounting-server.jar
+Restart=on-failure
+RestartSec=10
+
+# 生产环境变量（也可用 Environment= 单行写入）
+EnvironmentFile=/etc/home-accounting.env
+
+[Install]
+WantedBy=multi-user.target

@@ -22,3 +22,11 @@
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 replay_pid*
+
+# Backend local secrets / build
+backend/src/main/resources/generator/generator.properties
+backend/target/
+
+# IDE
+.idea/
+*.iml

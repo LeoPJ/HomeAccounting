@@ -1,0 +1,67 @@
+<view class="shell">
+  <view wx:if="{{loading}}" class="muted">加载中…</view>
+  <scroll-view wx:else scroll-y class="scroll">
+    <view class="hero">
+      <text class="hero-title">账户</text>
+      <text class="hero-sub">账本用于归类流水；资金账户对应真实钱包/银行卡余额</text>
+    </view>
+
+    <view class="section-label">账本</view>
+    <view class="card">
+      <text class="card-title">新建账本</text>
+      <view class="add-row">
+        <input class="input" placeholder="例如：日常开销、旅行专账" value="{{newLedgerName}}" bindinput="onNewLedgerInput" />
+        <button size="mini" class="btn-create" loading="{{savingLedger}}" bindtap="addLedger">创建</button>
+      </view>
+    </view>
+
+    <view wx:if="{{list.length === 0}}" class="empty">暂无账本，先创建一个再记一笔</view>
+    <view
+      wx:for="{{list}}"
+      wx:key="id"
+      class="ledger-card"
+      data-id="{{item.id}}"
+      data-name="{{item.name}}"
+      bindtap="openLedger"
+    >
+      <view class="ledger-row">
+        <text class="ledger-name">{{item.name}}</text>
+        <text class="chev">流水 ›</text>
+      </view>
+      <text class="ledger-id">#{{item.id}}</text>
+    </view>
+
+    <view class="section-label mt">资金账户</view>
+    <view class="card">
+      <text class="card-hint">记一笔时可关联账户；期初余额可选</text>
+      <view class="field-col">
+        <text class="field-label">账户名称</text>
+        <input class="input full" placeholder="例如：现金、招行储蓄" value="{{newFundName}}" bindinput="onNewFundName" />
+      </view>
+      <view class="field-col">
+        <text class="field-label">期初余额（可选）</text>
+        <input class="input full" type="digit" placeholder="留空为 0" value="{{newFundBalance}}" bindinput="onNewFundBalance" />
+      </view>
+      <button class="btn-create full" loading="{{savingFund}}" bindtap="addFundAccount">创建资金账户</button>
+    </view>
+
+    <view wx:if="{{funds.length === 0}}" class="empty tight">暂无资金账户</view>
+    <view
+      wx:for="{{funds}}"
+      wx:key="id"
+      class="fund-card"
+      data-id="{{item.id}}"
+      data-name="{{item.name}}"
+      bindtap="openFund"
+    >
+      <view class="fund-row">
+        <text class="fund-name">{{item.name}}</text>
+        <text class="fund-chev">流水 ›</text>
+      </view>
+      <text class="fund-bal">余额 {{item.balanceFmt}}</text>
+      <text class="fund-id">#{{item.id}}</text>
+    </view>
+
+    <view class="bottom-space"></view>
+  </scroll-view>
+</view>

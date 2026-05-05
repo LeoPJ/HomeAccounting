@@ -1,0 +1,41 @@
+<view class="shell">
+  <view wx:if="{{loading}}" class="muted">加载中…</view>
+  <scroll-view wx:else scroll-y class="scroll">
+    <view class="hero">
+      <text class="hero-title">流水明细</text>
+      <text class="hero-sub" wx:if="{{listMode === 'ledger'}}">当前账本 · 按自然日分组；点右侧编辑</text>
+      <text class="hero-sub" wx:else>当前资金账户 · 按自然日分组；点右侧编辑</text>
+    </view>
+    <view wx:if="{{dayGroups.length === 0}}" class="empty">该账本下还没有流水，去「记一笔」添加</view>
+
+    <block wx:for="{{dayGroups}}" wx:key="dayKey" wx:for-item="grp">
+      <view class="day-divider">
+        <view class="day-line"></view>
+        <text class="day-label">{{grp.dateLabel}}</text>
+        <view class="day-line"></view>
+      </view>
+      <view wx:for="{{grp.items}}" wx:key="id" class="tx-card">
+        <view class="tx-row-flex">
+          <view class="tx-left">
+            <view class="tx-top">
+              <text class="tx-cat">{{item.categoryName}}</text>
+              <text class="tx-amt {{item.type === 'INCOME' ? 'in' : 'ex'}}">{{item.amountFmt}}</text>
+            </view>
+            <view class="tx-meta">
+              <text class="chip">{{item.typeLabel}}</text>
+              <text class="tx-clock">{{item.clockShort}}</text>
+            </view>
+            <view class="tx-row2">
+              <text class="tx-fund">{{item.fundName}}</text>
+              <text wx:if="{{item.note}}" class="tx-note">{{item.note}}</text>
+            </view>
+            <view wx:if="{{item.tagLine}}" class="tx-tags">标签：{{item.tagLine}}</view>
+          </view>
+          <button size="mini" class="btn-edit" data-id="{{item.id}}" catchtap="editTxn">编辑</button>
+        </view>
+      </view>
+    </block>
+
+    <view class="bottom-space"></view>
+  </scroll-view>
+</view>

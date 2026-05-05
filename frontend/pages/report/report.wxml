@@ -1,0 +1,73 @@
+<view class="shell">
+  <view wx:if="{{loading}}" class="muted">加载中…</view>
+  <view wx:else class="page-inner">
+    <view class="hero">
+      <text class="hero-title">报表</text>
+      <text class="hero-sub">模板在本地编辑为 JSON 保存；运行后展示汇总、图示与命中流水</text>
+    </view>
+
+    <button type="primary" class="btn-new" bindtap="goNew">＋ 新建报表模板</button>
+
+    <view class="card">
+      <text class="card-title">统计月份（运行附加筛选）</text>
+      <picker mode="date" fields="month" value="{{reportMonth}}" bindchange="onMonthChange">
+        <view class="picker">{{reportMonth}}</view>
+      </picker>
+    </view>
+
+    <view class="section-title">我的模板</view>
+    <view wx:if="{{templates.length === 0}}" class="empty">
+      <text>还没有模板，点击上方「新建报表模板」从零配置筛选、维度与指标，保存后云端即可运行。</text>
+    </view>
+
+    <view wx:for="{{templates}}" wx:key="id" class="tpl-card">
+      <view class="tpl-main">
+        <text class="tpl-name">{{item.name}}</text>
+        <text class="tpl-id">#{{item.id}}</text>
+      </view>
+      <view class="tpl-actions">
+        <button size="mini" class="btn-soft" data-id="{{item.id}}" bindtap="goEdit">编辑</button>
+        <button size="mini" class="btn-soft danger" data-id="{{item.id}}" data-name="{{item.name}}" bindtap="confirmDelete">删除</button>
+        <button size="mini" type="primary" data-id="{{item.id}}" loading="{{runningId === item.id}}" disabled="{{runningId !== null}}" bindtap="runTemplate">本月运行</button>
+      </view>
+    </view>
+
+    <view class="section-title">汇总结果（limit={{runLimit}}）</view>
+    <view wx:if="{{summaryDisplay.length === 0}}" class="muted pad">尚未运行或暂无汇总行</view>
+    <view wx:for="{{summaryDisplay}}" wx:for-index="idx" wx:key="idx" class="row-card">
+      <text class="summary-line">{{item}}</text>
+    </view>
+
+    <!-- canvas 为原生组件：勿放在 enhanced scroll-view + sticky 内，否则易错位到屏幕底部 -->
+    <view wx:if="{{showPie}}" class="pie-section">
+      <text class="section-title sub pie-title">图示（饼图）</text>
+      <view class="pie-canvas-box">
+        <canvas type="2d" id="pieCanvas" class="pie-canvas"></canvas>
+      </view>
+      <view class="pie-legend">
+        <view wx:for="{{chartPieDisplay}}" wx:for-index="pi" wx:key="pi" class="pie-leg-row">
+          <view class="pie-dot" style="background-color: {{item.color}};"></view>
+          <text class="pie-leg-t">{{item.label}}</text>
+          <text class="pie-leg-v">{{item.valueFmt}}</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="section-title">命中流水参考（最多 {{detailLimit}} 条，按时间倒序）</view>
+    <view wx:if="{{detailDisplay.length === 0}}" class="muted pad">暂无或未运行</view>
+    <view wx:for="{{detailDisplay}}" wx:key="id" class="detail-card">
+      <view class="detail-main">
+        <text class="detail-cat">{{item.cat}}</text>
+        <text class="detail-amt">{{item.amtFmt}}</text>
+      </view>
+      <view class="detail-meta">
+        <text class="chip">{{item.typeLabel}}</text>
+        <text class="detail-time">{{item.shortTime}}</text>
+      </view>
+      <text wx:if="{{item.note}}" class="detail-note">{{item.note}}</text>
+      <button size="mini" class="btn-soft detail-edit" data-id="{{item.id}}" catchtap="openTxnFromReport">编辑流水</button>
+    </view>
+
+    <view class="bottom-space"></view>
+  </view>
+</view>
