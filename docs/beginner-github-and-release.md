@@ -244,6 +244,8 @@ sudo install -m 644 /home/你的用户名/incoming/home-accounting-server.jar /o
 
 修好网络后若仍失败，看该步红色日志里的英文报错（`Connection timed out`、`Permission denied` 等）再对症改。
 
+若日志里已经出现 **`Permanently added ... to the list of known hosts`**（说明 TCP + SSH 认证都过了），却仍然卡在 **`scp`**：多半是客户端默认走 **SFTP 传文件**，而你服务器上的 SFTP 子系统或权限在传数据阶段挂住。当前仓库的 workflow 已改为用 **`ssh` + 标准输入写文件**（不经 `scp`/SFTP），并加 **`timeout 300`** 防止整步无限挂；请拉最新 `deploy-backend.yml` 再跑。
+
 ---
 
 ## 第 9 步：小程序连上你的服务器
