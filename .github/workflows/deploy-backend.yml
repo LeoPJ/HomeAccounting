@@ -30,6 +30,7 @@ jobs:
           test -f "$JAR"
           cp "$JAR" release/home-accounting-server.jar
 
+      # timeout：连不上服务器时尽快失败，避免「卡住十几分钟」像死机（常见原因是安全组未放行公网 SSH）
       - name: Upload jar to server
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -37,6 +38,8 @@ jobs:
           username: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_SSH_KEY }}
           port: 22
+          timeout: 2m
+          command_timeout: 5m
           source: release/home-accounting-server.jar
           target: ${{ secrets.DEPLOY_REMOTE_DIR }}
 
@@ -47,5 +50,7 @@ jobs:
           username: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_SSH_KEY }}
           port: 22
+          timeout: 2m
+          command_timeout: 5m
           script_stop: true
           script: ${{ secrets.DEPLOY_REMOTE_COMMAND }}

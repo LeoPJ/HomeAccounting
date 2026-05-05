@@ -1,5 +1,7 @@
 # 生产环境变量与发布说明
 
+如果你刚把代码推到 GitHub、不知道从哪下手，先看 **[小白分步指南（beginner-github-and-release.md）](./beginner-github-and-release.md)**：具体到点哪个菜单、SSH 里敲什么命令。
+
 本文档与仓库内配置一致：`backend/src/main/resources/application.yml`、`frontend/config.js`、GitHub Actions（`.github/workflows/`）、部署示例（`deploy/`）。
 
 ---
