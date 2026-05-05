@@ -208,6 +208,8 @@ sudo /usr/local/bin/home-accounting-fetch-jar
 
 **不想用脚本时**：也可以在 **Build jar** 成功那次运行页里 **手动下载** `home-accounting-jar.zip`，解压出 jar 后，用 `scp` 或 `sudo cp` 放到 `INSTALL_DIR`，再 `sudo systemctl restart home-accounting`。
 
+**脚本打印了 `run_id` / `artifact_id` 后很久没动**：多半卡在 **下载 zip**（连 `api.github.com` 或重定向后的存储域名很慢、或被墙/丢包）。请更新仓库里的 `deploy/fetch-jar-from-github.sh`（已带 `curl` 超时与进度条）；仍慢时在 `github-fetch.env` 里加大 `CURL_MAX_TIME_ZIP`，或给服务器配 **HTTPS 代理** 后再执行脚本。
+
 ---
 
 ## 第 9 步：小程序连上你的服务器

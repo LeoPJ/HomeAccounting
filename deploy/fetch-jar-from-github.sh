@@ -33,6 +33,9 @@ WORKDIR="${WORKDIR:-/tmp/home-accounting-jar-fetch.$$}"
 
 API="https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}"
 HDR=(-H "Accept: application/vnd.github+json" -H "Authorization: Bearer ${GITHUB_TOKEN}")
+# 不设超时的话，到 GitHub 的网络半断时 curl 会一直挂住（看起来像脚本卡死）
+CURL_API=(--connect-timeout "${CURL_CONNECT_TIMEOUT:-20}" --max-time "${CURL_MAX_TIME_API:-120}" --retry 2 --retry-delay 3)
+CURL_ZIP=(--connect-timeout "${CURL_CONNECT_TIMEOUT:-20}" --max-time "${CURL_MAX_TIME_ZIP:-600}" --retry 2 --retry-delay 3)
 
 cleanup() { rm -rf "$WORKDIR"; }
 trap cleanup EXIT
@@ -40,7 +43,7 @@ trap cleanup EXIT
 mkdir -p "$WORKDIR"
 cd "$WORKDIR"
 
-RUN_JSON=$(curl -fsS "${HDR[@]}" \
+RUN_JSON=$(curl -fsS "${CURL_API[@]}" "${HDR[@]}" \
   "${API}/actions/workflows/build-jar.yml/runs?per_page=1&branch=${BRANCH}&status=completed&conclusion=success")
 RUN_ID=$(echo "$RUN_JSON" | jq -r '.workflow_runs[0].id // empty')
 if [[ -z "$RUN_ID" || "$RUN_ID" == "null" ]]; then
@@ -48,7 +51,7 @@ if [[ -z "$RUN_ID" || "$RUN_ID" == "null" ]]; then
   exit 1
 fi
 
-ART_JSON=$(curl -fsS "${HDR[@]}" "${API}/actions/runs/${RUN_ID}/artifacts")
+ART_JSON=$(curl -fsS "${CURL_API[@]}" "${HDR[@]}" "${API}/actions/runs/${RUN_ID}/artifacts")
 ART_ID=$(echo "$ART_JSON" | jq -r '.artifacts[] | select(.name=="home-accounting-jar") | .id' | head -1)
 if [[ -z "$ART_ID" || "$ART_ID" == "null" ]]; then
   echo "运行 ${RUN_ID} 中未找到名为 home-accounting-jar 的工件。" >&2
@@ -56,7 +59,11 @@ if [[ -z "$ART_ID" || "$ART_ID" == "null" ]]; then
 fi
 
 echo "使用运行 run_id=${RUN_ID}，artifact_id=${ART_ID}"
-curl -fsSL "${HDR[@]}" -o artifact.zip "${API}/actions/artifacts/${ART_ID}/zip"
+echo "正在下载工件 zip（默认最长 ${CURL_MAX_TIME_ZIP:-600}s；无进度时可设 CURL_MAX_TIME_ZIP=1200 或配置 HTTPS_PROXY）…" >&2
+# 不用 -s：否则进度条被静默掉，看起来像卡死；仍用 -f 遇 HTTP 错误失败、-L 跟随重定向到对象存储
+curl -fL "${CURL_ZIP[@]}" "${HDR[@]}" --progress-bar \
+  -o artifact.zip "${API}/actions/artifacts/${ART_ID}/zip"
+echo "下载完成，解压中…" >&2
 unzip -o artifact.zip
 test -f home-accounting-server.jar
 
